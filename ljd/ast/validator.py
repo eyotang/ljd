@@ -4,6 +4,10 @@
 
 import ljd.ast.nodes as nodes
 import ljd.ast.traverse as traverse
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 class TypeRestriction():
@@ -21,11 +25,16 @@ class TypeRestriction():
 		except KeyError:
 			typespec = self.default
 
-		assert typespec, "Unknown node: {0}".format(node)
+		#assert typespec, "Unknown node: {0}".format(node)
+		if not typespec:
+			logger.error("Unknown node: {1}".format(node))
 
-		assert isinstance(node, typespec), 		\
-			"Invalid node type: {0} should be: {1}"	\
-			.format(type(node), typespec)
+		# assert isinstance(node, typespec), \
+		# 	"Invalid node type: {0} should be: {1}" \
+		# 		.format(type(node), typespec)
+		if not isinstance(node, typespec):
+			logger.error("Invalid node type: {0} should be: {1}".format(type(node), typespec))
+
 
 
 STATEMENT_TYPES = (

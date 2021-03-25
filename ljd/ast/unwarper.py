@@ -4,6 +4,11 @@ import ljd.ast.nodes as nodes
 import ljd.ast.traverse as traverse
 import ljd.ast.slotworks as slotworks
 
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 binop = nodes.BinaryOperator
 
 
@@ -58,21 +63,22 @@ def _glue_flows(node):
 	for statements in _gather_statements_lists(node):
 		blocks = statements.contents
 
-		assert isinstance(blocks[-1].warp, nodes.EndWarp)
+		if hasattr(blocks[-1], 'warp'):
+			assert isinstance(blocks[-1].warp, nodes.EndWarp)
 
-		for i, block in enumerate(blocks[:-1]):
-			warp = block.warp
+			for i, block in enumerate(blocks[:-1]):
+				warp = block.warp
 
-			assert _is_flow(warp)
+				assert _is_flow(warp)
 
-			target = warp.target
+				target = warp.target
 
-			assert target == blocks[i + 1]
+				assert target == blocks[i + 1]
 
-			target.contents = block.contents + target.contents
-			block.contents = []
+				target.contents = block.contents + target.contents
+				block.contents = []
 
-		statements.contents = blocks[-1].contents
+			statements.contents = blocks[-1].contents
 
 
 # ##
@@ -962,7 +968,8 @@ def _unwarp_if_statement(start, body, end, topmost_end):
 			else:
 				assert else_warp_out.target == end
 		else:
-			assert isinstance(else_warp_out, nodes.EndWarp)
+			# assert isinstance(else_warp_out, nodes.EndWarp)
+			logger.error("err: unwarper.py assert isinstance(else_warp_out, nodes.EndWarp), Block indices are unreliable while you are mangling them! P.S. Probably they should not be named indices... But they ARE used as indices during other phases. Sometimes.")
 
 		_set_end(then_body[-1])
 		then_blocks = _unwarp_ifs(then_body, then_body[-1], topmost_end)
